@@ -12,7 +12,7 @@ public class Heatmap : MonoBehaviour
 {
     public string file;
 
-    public Material material;
+    public Material[] material;
 
     public int count;
 
@@ -21,29 +21,37 @@ public class Heatmap : MonoBehaviour
 
     List<TransformData> data;
 
-    List<Vector4> positions;
+    List<List<Vector4>> positions;
     public Vector2 parameters;
 
     private void Start()
     {
         data = new List<TransformData>();
-        positions = new List<Vector4>();
+        positions = new List<List<Vector4>>();
 
         textReader = File.OpenText(file);
         csv = new CsvReader(textReader);
         csv.Configuration.RegisterClassMap<TransformDataMap>();
         IEnumerable<TransformData> enumerable = csv.GetRecords<TransformData>();
         data = enumerable.ToList();
-        for (int i = 0; i < data.Count; i++)
+        for (int i = 0; i < data.Count; i+=count)
         {
-            positions.Add(new Vector4(data[i].X, data[i].Y - 1f, parameters[0], parameters[1]));
+            List<Vector4> temp = new List<Vector4>();
+            for (int j = 0; j < count; j++)
+            {
+                temp.Add(new Vector4(data[i+j].X, data[i+j].Y - 1f, parameters[0], parameters[1]));
+            }
+            positions.Add(temp);
         }
     }
 
     void Update()
     {
-        material.SetInt("_Points_Length", data.Count);
-        material.SetVectorArray("_Points", positions);
+        for (int i = 0; i < positions.Count; i++)
+        {
+            material[i].SetInt("_Points_Length", data.Count);
+            material[i].SetVectorArray("_Points", positions[i]);
+        }
     }
 
     public class TransformData
