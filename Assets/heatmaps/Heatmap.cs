@@ -52,20 +52,20 @@ public class Heatmap : MonoBehaviour
             }
             positions.Add(temp);
         }
-
+        
         float ySize = maxY - minY;
         float xSize = maxX - minX;
-        float prevY = 0f;
-        float prevX = 0f;
+        float yinc = ySize / segments;
+        float xinc = xSize / segments;
         for (int i = 0; i < data.Count; i++)
         {
-            for (float y = 0f; y < ySize; y += ySize / segments)
+            for (int y = 0; y < segments; y++)
             {
-                if (data[i].Y >= prevY && data[i].Y < y)
+                if (data[i].Y >= (y-1)*yinc && data[i].Y < y * yinc)
                 {
-                    for (float x = 0f; x < xSize; x += xSize / segments)
+                    for (int x = 0; x < segments; x++)
                     {
-                        if (data[i].X >= prevX && data[i].X < x)
+                        if (data[i].X >= (x - 1) * xinc && data[i].X < x * xinc)
                         {
 
                         }
