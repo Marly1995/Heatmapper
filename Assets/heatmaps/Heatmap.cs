@@ -12,9 +12,16 @@ public class Heatmap : MonoBehaviour
 {
     public string file;
 
+    public float maxX;
+    public float minX;
+
+    public float maxY;
+    public float minY;
+
     public Material[] material;
 
     public int count;
+    public int segments;
 
     TextReader textReader;
     CsvReader csv;
@@ -40,9 +47,31 @@ public class Heatmap : MonoBehaviour
             for (int j = 0; j < count; j++)
             {
                 if (i+j >= data.Count) { break; }
+                CheckBoundaries(data[i + j].X, data[i + j].Y);
                 temp.Add(new Vector4(data[i+j].X, data[i+j].Y - 1f, parameters[0], parameters[1]));
             }
             positions.Add(temp);
+        }
+
+        float ySize = maxY - minY;
+        float xSize = maxX - minX;
+        float prevY = 0f;
+        float prevX = 0f;
+        for (int i = 0; i < data.Count; i++)
+        {
+            for (float y = 0f; y < ySize; y += ySize / segments)
+            {
+                if (data[i].Y >= prevY && data[i].Y < y)
+                {
+                    for (float x = 0f; x < xSize; x += xSize / segments)
+                    {
+                        if (data[i].X >= prevX && data[i].X < x)
+                        {
+
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -53,6 +82,14 @@ public class Heatmap : MonoBehaviour
             material[i].SetInt("_Points_Length", data.Count);
             material[i].SetVectorArray("_Points", positions[i]);
         }
+    }
+
+    void CheckBoundaries(float x, float y)
+    {
+        if (x >= maxX) { maxX = x; }
+        if (x <= minX) { minX = x; }
+        if (y >= maxY) { maxY = y; }
+        if (y <= minY) { minY = y; }
     }
 
     public class TransformData
