@@ -39,6 +39,7 @@ public class Heatmap : MonoBehaviour
             List<Vector4> temp = new List<Vector4>();
             for (int j = 0; j < count; j++)
             {
+                if (i+j >= data.Count) { break; }
                 temp.Add(new Vector4(data[i+j].X, data[i+j].Y - 1f, parameters[0], parameters[1]));
             }
             positions.Add(temp);
