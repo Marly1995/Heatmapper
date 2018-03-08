@@ -244,10 +244,6 @@ public class Heatmap : ScriptableObject {
 			c.enabled = false;
 
 		cam.enabled = true;
-		int i = 0;
-
-		while(System.IO.File.Exists(path))
-			path = path.Replace(".png", ++i + ".png");
 
 		ScreenCapture.CaptureScreenshot(path, 4);
 

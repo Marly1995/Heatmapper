@@ -6,6 +6,7 @@ using UnityEngine;
 
 using CsvHelper;
 using CsvHelper.Configuration;
+using System.Collections;
 
 public class DataVisuliser : MonoBehaviour
 {
@@ -20,6 +21,8 @@ public class DataVisuliser : MonoBehaviour
     List<Vector3> num9 = new List<Vector3>();
     List<Vector3> num10 = new List<Vector3>();
 
+    public int numOfParticipants;
+
     public string file;
 
     public Material[] material;
@@ -30,9 +33,9 @@ public class DataVisuliser : MonoBehaviour
     List<TransformData> data;
 
     // Heatmap Settings
-    public int pointRadius = 40;                                
+    public int pointRadius = 40;
 
-    public bool createPrimitive = false;                        
+    public bool createPrimitive = false;
 
     public new Camera camera;
 
@@ -40,6 +43,132 @@ public class DataVisuliser : MonoBehaviour
 
     [Space]
     public int displayNumber;
+
+    public Rect GUIToScreenRect(Rect guiRect)
+    {
+        return new Rect(guiRect.x, Screen.height - (guiRect.y + guiRect.height), guiRect.width, guiRect.height);
+    }
+
+    private void Start()
+    {
+        StartCoroutine(LoadDatasets());
+    }
+
+    public IEnumerator LoadDatasets()
+    {
+        for (int i = 1; i < numOfParticipants; i++)
+        {
+            data = new List<TransformData>();
+            string path = file + "\\" + i.ToString() + "\\" + "globaldata";
+            textReader = File.OpenText(path);
+            csv = new CsvReader(textReader);
+            csv.Configuration.RegisterClassMap<TransformDataMap>();
+            IEnumerable<TransformData> enumerable = csv.GetRecords<TransformData>();
+            data = enumerable.ToList();
+
+            for (int j = 0; j < data.Count; j++)
+            {
+                if (data[j].Gesturing)
+                    AddPoint(new Vector3(data[j].RightX, data[j].RightY, data[j].RightZ), data[j].GestureNumber);
+            }
+            Debug.Log("[" + i.ToString() + "] -- Loading Complete!!!");
+
+            Texture2D heatmapImage = Heatmap.CreateHeatmap(num1.ToArray(), camera, pointRadius);
+            Heatmap.CreateRenderPlane(heatmapImage);
+            TakeScreenshot(i, 0);
+            num1.Clear();
+            yield return new WaitForEndOfFrame();
+            heatmapImage = Heatmap.CreateHeatmap(num2.ToArray(), camera, pointRadius);
+            Heatmap.CreateRenderPlane(heatmapImage);
+            TakeScreenshot(i, 1);
+            num2.Clear();
+            yield return new WaitForEndOfFrame();
+            heatmapImage = Heatmap.CreateHeatmap(num3.ToArray(), camera, pointRadius);
+            Heatmap.CreateRenderPlane(heatmapImage);
+            TakeScreenshot(i, 2);
+            num3.Clear();
+            yield return new WaitForEndOfFrame();
+            heatmapImage = Heatmap.CreateHeatmap(num4.ToArray(), camera, pointRadius);
+            Heatmap.CreateRenderPlane(heatmapImage);
+            TakeScreenshot(i, 3);
+            num4.Clear();
+            yield return new WaitForEndOfFrame();
+            heatmapImage = Heatmap.CreateHeatmap(num5.ToArray(), camera, pointRadius);
+            Heatmap.CreateRenderPlane(heatmapImage);
+            TakeScreenshot(i, 4);
+            num5.Clear();
+            yield return new WaitForEndOfFrame();
+            heatmapImage = Heatmap.CreateHeatmap(num6.ToArray(), camera, pointRadius);
+            Heatmap.CreateRenderPlane(heatmapImage);
+            TakeScreenshot(i, 5);
+            num6.Clear();
+            yield return new WaitForEndOfFrame();
+            heatmapImage = Heatmap.CreateHeatmap(num7.ToArray(), camera, pointRadius);
+            Heatmap.CreateRenderPlane(heatmapImage);
+            TakeScreenshot(i, 6);
+            num7.Clear();
+            yield return new WaitForEndOfFrame();
+            heatmapImage = Heatmap.CreateHeatmap(num8.ToArray(), camera, pointRadius);
+            Heatmap.CreateRenderPlane(heatmapImage);
+            TakeScreenshot(i, 7);
+            num8.Clear();
+            yield return new WaitForEndOfFrame();
+            heatmapImage = Heatmap.CreateHeatmap(num9.ToArray(), camera, pointRadius);
+            Heatmap.CreateRenderPlane(heatmapImage);
+            TakeScreenshot(i, 8);
+            num9.Clear();
+            yield return new WaitForEndOfFrame();
+            heatmapImage = Heatmap.CreateHeatmap(num10.ToArray(), camera, pointRadius);
+            Heatmap.CreateRenderPlane(heatmapImage);
+            TakeScreenshot(i, 9);
+            num10.Clear();
+            yield return new WaitForEndOfFrame();
+        }
+    }
+
+    public void TakeScreenshot(int participant, int number)
+    {
+        string path = "Assets/Screenshots/" + participant.ToString() + "/" + number.ToString() + ".png";
+        Debug.Log(Heatmap.Screenshot(path, camera));
+        //ScreenCapture.CaptureScreenshot(path, 4);
+    }
+
+    void AddPoint(Vector3 pos, int num)
+    {
+        switch (num)
+        {
+            case 0:
+                num1.Add(pos * 10f);
+                break;
+            case 1:
+                num2.Add(pos * 10f);
+                break;
+            case 2:
+                num3.Add(pos * 10f);
+                break;
+            case 3:
+                num4.Add(pos * 10f);
+                break;
+            case 4:
+                num5.Add(pos * 10f);
+                break;
+            case 5:
+                num6.Add(pos * 10f);
+                break;
+            case 6:
+                num7.Add(pos * 10f);
+                break;
+            case 7:
+                num8.Add(pos * 10f);
+                break;
+            case 8:
+                num9.Add(pos * 10f);
+                break;
+            case 9:
+                num10.Add(pos * 10f);
+                break;
+        }
+    }
 
     public void OnGUI()
     {
@@ -90,65 +219,6 @@ public class DataVisuliser : MonoBehaviour
                     Heatmap.CreateRenderPlane(heatmapImage);
                     break;
             }
-        }
-    }
-
-    public Rect GUIToScreenRect(Rect guiRect)
-    {
-        return new Rect(guiRect.x, Screen.height - (guiRect.y + guiRect.height), guiRect.width, guiRect.height);
-    }
-
-    private void Start()
-    {
-        data = new List<TransformData>();
-
-        textReader = File.OpenText(file);
-        csv = new CsvReader(textReader);
-        csv.Configuration.RegisterClassMap<TransformDataMap>();
-        IEnumerable<TransformData> enumerable = csv.GetRecords<TransformData>();
-        data = enumerable.ToList();
-
-        for (int i = 0; i < data.Count; i++)
-        {
-            AddPoint(new Vector3(data[i].RightX, data[i].RightY, data[i].RightZ), data[i].GestureNumber);
-        }
-        Debug.Log("Loading Complete!!!");
-    }
-
-    void AddPoint(Vector3 pos, int num)
-    {
-        switch (num)
-        {
-            case 0:
-                num1.Add(pos * 10f);
-                break;
-            case 1:
-                num2.Add(pos * 10f);
-                break;
-            case 2:
-                num3.Add(pos * 10f);
-                break;
-            case 3:
-                num4.Add(pos * 10f);
-                break;
-            case 4:
-                num5.Add(pos * 10f);
-                break;
-            case 5:
-                num6.Add(pos * 10f);
-                break;
-            case 6:
-                num7.Add(pos * 10f);
-                break;
-            case 7:
-                num8.Add(pos * 10f);
-                break;
-            case 8:
-                num9.Add(pos * 10f);
-                break;
-            case 9:
-                num10.Add(pos * 10f);
-                break;
         }
     }
 }
