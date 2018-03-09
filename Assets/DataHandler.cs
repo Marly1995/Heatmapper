@@ -65,6 +65,7 @@ public class DataHandler : MonoBehaviour
             }
             Texture2D heatmapImage = Heatmap.CreateHeatmap(heatmapPoints.ToArray(), GetComponent<Camera>(), pointRadius);
             Heatmap.CreateRenderPlane(heatmapImage);
+            Heatmap.projectionPlane.transform.position = new Vector3(-0.7f, 0.7f, 1f);
         }
     }
 
@@ -72,12 +73,12 @@ public class DataHandler : MonoBehaviour
     {
         if (doneLoading)
         {
-            head.position = headPositions[indexPositionStart];
-            head.rotation = headRotations[indexPositionStart];
-            rightHand.position = rightHandPositions[indexPositionStart];
-            rightHand.rotation = rightHandRotations[indexPositionStart];
-            leftHand.position = leftHandPositions[indexPositionStart];
-            leftHand.rotation = leftHandRotations[indexPositionStart];
+            head.localPosition = headPositions[indexPositionStart];
+            head.localRotation = headRotations[indexPositionStart];
+            rightHand.localPosition = rightHandPositions[indexPositionStart];
+            rightHand.localRotation = rightHandRotations[indexPositionStart];
+            leftHand.localPosition = leftHandPositions[indexPositionStart];
+            leftHand.localRotation = leftHandRotations[indexPositionStart];
         }
     }
 
