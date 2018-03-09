@@ -22,10 +22,16 @@ public class DataHandler : MonoBehaviour
     TextReader textReader;
     CsvReader csv;
 
+    // participant data set
     List<TransformData> data;
 
+    // heatmap data
     List<Vector3> heatmapPoints;
     public int pointRadius;
+
+    // line chart data
+    List<float> linePoints;
+    public LineRenderer line;
 
     // positions for 3d representation
     public Transform head;
@@ -44,14 +50,17 @@ public class DataHandler : MonoBehaviour
     private void Start()
     {
         heatmapPoints = new List<Vector3>();
+        linePoints = new List<float>();
         StartCoroutine(LoadDatasets());
     }
 
     private void Update()
     {
         UpdateVisualRepresentation();
-        if (Input.GetKey(KeyCode.Space))
+        if (Input.GetKey(KeyCode.Keypad1))
         { BuildHeatmap(); }
+        if (Input.GetKey(KeyCode.Keypad2))
+        { BuildLineChart(); }
     }
 
     private void BuildHeatmap()
@@ -66,6 +75,26 @@ public class DataHandler : MonoBehaviour
             Texture2D heatmapImage = Heatmap.CreateHeatmap(heatmapPoints.ToArray(), GetComponent<Camera>(), pointRadius);
             Heatmap.CreateRenderPlane(heatmapImage);
             Heatmap.projectionPlane.transform.position = new Vector3(-0.7f, 0.7f, 1f);
+            Debug.Log("Map Built");
+        }
+    }
+
+    private void BuildLineChart()
+    {
+        linePoints.Clear();
+        if (indexPositionStart < indexPositionEnd)
+        {
+            for (int i = indexPositionStart; i < indexPositionEnd; i++)
+            {
+                linePoints.Add(rightHandPositions[i].magnitude);
+            }
+            float increment = 2f / (indexPositionEnd - indexPositionStart);
+            line.positionCount = indexPositionEnd - indexPositionStart;
+            for (int i = 0; i < line.positionCount; i++)
+            {
+                line.SetPosition(i, new Vector3((i * increment)-1f, linePoints[i]-1f, 0f));
+            }
+            Debug.Log("Line Built");
         }
     }
 
@@ -120,6 +149,7 @@ public class DataHandler : MonoBehaviour
             leftHandPositions[i] = vec3;
             leftHandRotations[i] = quat;
         }
+        Debug.Log("Done Loading");
         doneLoading = true;
         yield return 0;
     }
