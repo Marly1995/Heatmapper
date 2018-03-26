@@ -33,6 +33,10 @@ public class DataHandler : MonoBehaviour
     List<float> linePoints;
     public LineRenderer line;
 
+    // angular line chart data
+    List<float> angularLinePoints;
+    public LineRenderer angularLine;
+
     // positions for 3d representation
     public Transform head;
     public Transform rightHand;
@@ -45,12 +49,23 @@ public class DataHandler : MonoBehaviour
     Quaternion[] rightHandRotations;
     Quaternion[] leftHandRotations;
 
+    bool[] GestureTime;
+    bool[] Gesturing;
+
     bool doneLoading = false;
+
+    public GameObject askedLine;
+    bool asked;
+    public GameObject startedLine;
+    bool started;
+    public GameObject endedLine;
+    bool ended;
 
     private void Start()
     {
         heatmapPoints = new List<Vector3>();
         linePoints = new List<float>();
+        angularLinePoints = new List<float>();
         StartCoroutine(LoadDatasets());
     }
 
@@ -61,6 +76,8 @@ public class DataHandler : MonoBehaviour
         { BuildHeatmap(); }
         if (Input.GetKey(KeyCode.Keypad2))
         { BuildLineChart(); }
+        if (Input.GetKey(KeyCode.Keypad3))
+        { BuildAngularLineChart(); }
     }
 
     private void BuildHeatmap()
@@ -81,18 +98,52 @@ public class DataHandler : MonoBehaviour
 
     private void BuildLineChart()
     {
+        asked = false; started = false; ended = false;
         linePoints.Clear();
         if (indexPositionStart < indexPositionEnd)
         {
             for (int i = indexPositionStart; i < indexPositionEnd; i++)
             {
-                linePoints.Add(rightHandPositions[i].magnitude);
+                float vel = (rightHandPositions[i + 1] - rightHandPositions[i]).magnitude / 0.16f;
+                linePoints.Add(vel);
             }
             float increment = 2f / (indexPositionEnd - indexPositionStart);
             line.positionCount = indexPositionEnd - indexPositionStart;
             for (int i = 0; i < line.positionCount; i++)
             {
+                if (!asked && GestureTime[i + indexPositionStart])
+                {
+                    asked = true; askedLine.transform.position = new Vector3((i * increment) - 1f, -1f, 0f);
+                }
+                if (!started && Gesturing[i + indexPositionStart])
+                {
+                    started = true; startedLine.transform.position = new Vector3((i * increment) - 1f, -1f, 0f);
+                }
+                if (started && !ended && !Gesturing[i + indexPositionStart])
+                {
+                    ended = true; endedLine.transform.position = new Vector3((i * increment) - 1f, -1f, 0f);
+                }
                 line.SetPosition(i, new Vector3((i * increment)-1f, linePoints[i]-1f, 0f));
+            }
+            Debug.Log("Line Built");
+        }
+    }
+
+    private void BuildAngularLineChart()
+    {
+        angularLinePoints.Clear();
+        if (indexPositionStart < indexPositionEnd)
+        {
+            for (int i = indexPositionStart; i < indexPositionEnd; i++)
+            {
+                float vel = (rightHandRotations[i + 1].eulerAngles - rightHandRotations[i].eulerAngles).normalized.magnitude;
+                angularLinePoints.Add(vel);
+            }
+            float increment = 2f / (indexPositionEnd - indexPositionStart);
+            angularLine.positionCount = indexPositionEnd - indexPositionStart;
+            for (int i = 0; i < angularLine.positionCount; i++)
+            {
+                angularLine.SetPosition(i, new Vector3((i * increment) - 1f, angularLinePoints[i], 0f));
             }
             Debug.Log("Line Built");
         }
@@ -129,6 +180,9 @@ public class DataHandler : MonoBehaviour
         rightHandRotations = new Quaternion[data.Count];
         leftHandRotations = new Quaternion[data.Count];
 
+        GestureTime = new bool[data.Count];
+        Gesturing = new bool[data.Count];
+
         Vector3 vec3 = new Vector3();
         Quaternion quat = new Quaternion();
         for (int i = 0; i < data.Count; i++)
@@ -148,6 +202,9 @@ public class DataHandler : MonoBehaviour
             quat.x = data[i].LeftRotX; quat.y = data[i].LeftRotY; quat.z = data[i].LeftRotZ; quat.w = data[i].LeftRotW;
             leftHandPositions[i] = vec3;
             leftHandRotations[i] = quat;
+
+            GestureTime[i] = data[i].GestureTime;
+            Gesturing[i] = data[i].Gesturing;
         }
         Debug.Log("Done Loading");
         doneLoading = true;
